@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.24)
 
 # Change to your project name
-project(SimpleJucePluginTemplate VERSION 0.0.1)
+project(JuceSamplePlugin VERSION 0.0.1)
 
 
 set(CMAKE_CXX_STANDARD 17)
@@ -29,15 +29,15 @@ CPMAddPackage(
 
 # Make sure you include any new source files here
 set(SourceFiles
-        Source/PluginEditor.cpp
-        Source/PluginEditor.h
-        Source/PluginProcessor.cpp
-        Source/PluginProcessor.h
+    Source/PluginEditor.cpp
+    Source/PluginEditor.h
+    Source/PluginProcessor.cpp
+    Source/PluginProcessor.h
 )
 
 # Change these to your own preferences
 juce_add_plugin(${PROJECT_NAME}
-        COMPANY_NAME theaudioprogrammer
+        COMPANY_NAME williambuck
         IS_SYNTH FALSE
         NEEDS_MIDI_INPUT FALSE
         NEEDS_MIDI_OUTPUT FALSE
@@ -45,10 +45,12 @@ juce_add_plugin(${PROJECT_NAME}
         EDITOR_WANTS_KEYBOARD_FOCUS FALSE
         JUCE_VST3_CAN_REPLACE_VST2 FALSE
         COPY_PLUGIN_AFTER_BUILD TRUE
-        PLUGIN_MANUFACTURER_CODE Tap1
-        PLUGIN_CODE Reg0
+        PLUGIN_MANUFACTURER_CODE Wsb3
+        BUNDLE_ID dev.williambuck.dspintro
+        COMPANY_NAME "WilliamBuck"
+        PLUGIN_CODE Wsb3
         FORMATS VST3 AU Standalone
-        PRODUCT_NAME "TapPluginTemplate"        
+        PRODUCT_NAME "JUCESamplePlugin"
 )
 
 # How we want our SourceFiles to appear in our IDE
@@ -83,3 +85,23 @@ target_link_libraries(${PROJECT_NAME}
         juce::juce_recommended_warning_flags
 )
 
+# Post-build: Code sign all plugin formats on macOS
+if(APPLE)
+    # Sign Standalone app
+    add_custom_command(TARGET ${PROJECT_NAME}_Standalone POST_BUILD
+        COMMAND codesign --force --deep --sign - "$<TARGET_BUNDLE_DIR:${PROJECT_NAME}_Standalone>"
+        COMMENT "Code signing Standalone app"
+    )
+
+    # Sign VST3 plugin
+    add_custom_command(TARGET ${PROJECT_NAME}_VST3 POST_BUILD
+        COMMAND codesign --force --deep --sign - "$<TARGET_BUNDLE_DIR:${PROJECT_NAME}_VST3>"
+        COMMENT "Code signing VST3 plugin"
+    )
+
+    # Sign AU plugin
+    add_custom_command(TARGET ${PROJECT_NAME}_AU POST_BUILD
+        COMMAND codesign --force --deep --sign - "$<TARGET_BUNDLE_DIR:${PROJECT_NAME}_AU>"
+        COMMENT "Code signing AU plugin"
+    )
+endif()
